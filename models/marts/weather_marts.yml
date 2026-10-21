@@ -1,0 +1,103 @@
+version: 2
+
+models:
+  - name: dim_date
+    description: "Datumsdimension für alle Zeitachsen"
+    columns:
+      - name: date
+        description: "Datum (PK)"
+        tests:
+          - unique
+          - not_null
+      - name: year
+        description: "Jahr"
+      - name: month
+        description: "Monat (1-12)"
+      - name: day
+        description: "Tag (1-31)"
+      - name: day_of_week
+        description: "Wochentag (1=Montag)"
+      - name: day_of_year
+        description: "Tag des Jahres"
+      - name: week_of_year
+        description: "Kalenderwoche"
+      - name: quarter
+        description: "Quartal"
+      - name: year_month
+        description: "Jahr-Monat (YYYY-MM)"
+      - name: year_week
+        description: "Jahr-KW (YYYY-Www)"
+      - name: day_name
+        description: "Wochentag (Name)"
+      - name: month_name
+        description: "Monat (Name)"
+      - name: season
+        description: "Jahreszeit"
+
+  - name: fact_weather_daily
+    description: "Wetter-Tagesdaten (Open-Meteo, Potsdam)"
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - date
+            - location_name
+    columns:
+      - name: date
+        description: "Datum"
+        tests:
+          - not_null
+      - name: location_name
+        description: "Standort (z.B. Potsdam)"
+        tests:
+          - not_null
+      - name: temp_max_celsius
+        description: "Max. Temperatur (°C)"
+      - name: temp_min_celsius
+        description: "Min. Temperatur (°C)"
+      - name: temp_avg_celsius
+        description: "Durchschn. Temperatur (°C)"
+      - name: precipitation_mm
+        description: "Niederschlag (mm)"
+      - name: weather_code
+        description: "WMO Weather Code"
+      - name: wind_speed_max_kmh
+        description: "Max. Windgeschwindigkeit (km/h)"
+      - name: weather_category
+        description: "Wetterkategorie (Sonnig, Regen, etc.)"
+      - name: temp_category
+        description: "Temperaturkategorie (Heiß, Warm, Mild, Kühl, Kalt)"
+
+  - name: fact_weather_hourly
+    description: "Wetter-Stundendaten (Open-Meteo, Potsdam)"
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - timestamp_utc
+            - location_name
+    columns:
+      - name: timestamp_utc
+        description: "Zeitstempel (UTC)"
+        tests:
+          - not_null
+      - name: date
+        description: "Datum"
+      - name: hour_of_day
+        description: "Stunde des Tages (0-23)"
+      - name: location_name
+        description: "Standort"
+        tests:
+          - not_null
+      - name: temp_celsius
+        description: "Temperatur (°C)"
+      - name: precipitation_mm
+        description: "Niederschlag (mm)"
+      - name: weather_code
+        description: "WMO Weather Code"
+      - name: wind_speed_kmh
+        description: "Windgeschwindigkeit (km/h)"
+      - name: humidity_percent
+        description: "Luftfeuchtigkeit (%)"
+      - name: weather_category
+        description: "Wetterkategorie"
+      - name: temp_category
+        description: "Temperaturkategorie"

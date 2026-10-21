@@ -1,0 +1,52 @@
+version: 2
+
+sources:
+  - name: raw
+    database: dwh-db-504211
+    schema: DWH
+    tables:
+      - name: weather_daily
+        identifier: weather_daily
+        description: "Raw weather daily data from Open-Meteo API via Meltano tap-openmeteo"
+        columns:
+          - name: data
+            description: "Full JSON response"
+          - name: _sdc_extracted_at
+            description: "Timestamp when record was extracted by Meltano"
+          - name: _sdc_received_at
+            description: "Timestamp when record was received by Meltano"
+          - name: _sdc_batched_at
+            description: "Timestamp when record was batched by Meltano"
+          - name: _sdc_sequence
+            description: "Sequence number for ordering"
+      - name: weather_hourly
+        identifier: weather_hourly
+        description: "Raw weather hourly data from Open-Meteo API via Meltano tap-openmeteo"
+        columns:
+          - name: data
+            description: "Full JSON response"
+          - name: _sdc_extracted_at
+            description: "Timestamp when record was extracted by Meltano"
+          - name: _sdc_received_at
+            description: "Timestamp when record was received by Meltano"
+          - name: _sdc_batched_at
+            description: "Timestamp when record was batched by Meltano"
+          - name: _sdc_sequence
+            description: "Sequence number for ordering"
+
+  - name: DWH
+    database: dwh-db-504211
+    schema: DWH
+    tables:
+      - name: performance_report_country
+        description: "Google Search Console performance report by country"
+      - name: performance_report_date
+        description: "Google Search Console performance report by date"
+      - name: performance_report_device
+        description: "Google Search Console performance report by device"
+      - name: performance_report_keys
+        description: "Google Search Console performance report by search keys"
+      - name: performance_report_page
+        description: "Google Search Console performance report by page"
+      - name: performance_report_query
+        description: "Google Search Console performance report by query"

@@ -1,0 +1,14 @@
+# dbt-Artefakte
+target/
+dbt_packages/
+logs/
+.user.yml
+# Leitstand-Zustand, falls im Projekt
+.leitstand/
+# alte Sicherungskopien (übernimmt jetzt Git)
+backups/
+*.bak
+# lokale Umgebung
+.env
+.venv/
+__pycache__/

@@ -1,0 +1,420 @@
+version: 2
+
+models:
+  - name: stg_weather_daily
+    description: "Staging model for Open-Meteo daily weather data"
+    columns:
+      - name: date_str
+        description: "Date string from API"
+        tests:
+          - not_null
+      - name: date
+        description: "Date of the weather data"
+        tests:
+          - not_null
+      - name: location_name
+        description: "Location name"
+        tests:
+          - not_null
+      - name: temp_max_celsius
+        description: "Maximum temperature in Celsius"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: -50
+                max_value: 60
+      - name: temp_min_celsius
+        description: "Minimum temperature in Celsius"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: -50
+                max_value: 60
+      - name: precipitation_mm
+        description: "Precipitation in mm"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+      - name: weather_code
+        description: "WMO weather code"
+        tests:
+          - not_null
+      - name: wind_speed_max_kmh
+        description: "Maximum wind speed in km/h"
+        tests:
+          - not_null
+
+  - name: stg_weather_hourly
+    description: "Staging model for Open-Meteo hourly weather data"
+    columns:
+      - name: time_str
+        description: "Timestamp string from API (ISO format)"
+        tests:
+          - not_null
+      - name: timestamp_utc
+        description: "UTC timestamp of measurement (from ISO string)"
+      - name: timestamp_unix_utc
+        description: "UTC timestamp of measurement (from unix timestamp)"
+      - name: ts_final
+        description: "Final UTC timestamp (coalesced)"
+        tests:
+          - not_null
+      - name: location_name
+        description: "Location name"
+        tests:
+          - not_null
+      - name: temp_celsius
+        description: "Temperature in Celsius"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: -50
+                max_value: 60
+      - name: precipitation_mm
+        description: "Precipitation in mm"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+      - name: weather_code
+        description: "WMO weather code"
+        tests:
+          - not_null
+      - name: wind_speed_kmh
+        description: "Wind speed in km/h"
+        tests:
+          - not_null
+      - name: humidity_percent
+        description: "Humidity percentage"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                max_value: 100
+
+  - name: stg_gsc__performance_report_country
+    description: "Staging model for GSC performance report by country"
+    columns:
+      - name: id
+        description: "Surrogate key"
+        tests:
+          - not_null
+          - unique
+      - name: site_url
+        description: "GSC site URL"
+        tests:
+          - not_null
+      - name: date
+        description: "Date of the performance data"
+        tests:
+          - not_null
+      - name: country
+        description: "Country code (ISO 3166-1 alpha-3)"
+        tests:
+          - not_null
+      - name: clicks
+        description: "Number of clicks"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+      - name: impressions
+        description: "Number of impressions"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+      - name: ctr
+        description: "Click-through rate"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                max_value: 1
+      - name: position
+        description: "Average position in search results"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+      - name: domain
+        description: "Source domain (sc-domain:...)"
+        tests:
+          - not_null
+
+  - name: stg_gsc__performance_report_date
+    description: "Staging model for GSC performance report by date"
+    columns:
+      - name: id
+        description: "Surrogate key"
+        tests:
+          - not_null
+          - unique
+      - name: site_url
+        description: "GSC site URL"
+        tests:
+          - not_null
+      - name: date
+        description: "Date of the performance data"
+        tests:
+          - not_null
+      - name: clicks
+        description: "Number of clicks"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+      - name: impressions
+        description: "Number of impressions"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+      - name: ctr
+        description: "Click-through rate"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                max_value: 1
+      - name: position
+        description: "Average position in search results"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+      - name: domain
+        description: "Source domain (sc-domain:...)"
+        tests:
+          - not_null
+
+  - name: stg_gsc__performance_report_device
+    description: "Staging model for GSC performance report by device"
+    columns:
+      - name: id
+        description: "Surrogate key"
+        tests:
+          - not_null
+          - unique
+      - name: site_url
+        description: "GSC site URL"
+        tests:
+          - not_null
+      - name: date
+        description: "Date of the performance data"
+        tests:
+          - not_null
+      - name: device
+        description: "Device type (DESKTOP, MOBILE, TABLET)"
+        tests:
+          - not_null
+      - name: clicks
+        description: "Number of clicks"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+      - name: impressions
+        description: "Number of impressions"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+      - name: ctr
+        description: "Click-through rate"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                max_value: 1
+      - name: position
+        description: "Average position in search results"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+      - name: domain
+        description: "Source domain (sc-domain:...)"
+        tests:
+          - not_null
+
+  - name: stg_gsc__performance_report_keys
+    description: "Staging model for GSC performance report by search keys"
+    columns:
+      - name: id
+        description: "Surrogate key"
+        tests:
+          - not_null
+          - unique
+      - name: site_url
+        description: "GSC site URL"
+        tests:
+          - not_null
+      - name: date
+        description: "Date of the performance data"
+        tests:
+          - not_null
+      - name: keys
+        description: "Search query keywords"
+        tests:
+          - not_null
+      - name: clicks
+        description: "Number of clicks"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+      - name: impressions
+        description: "Number of impressions"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+      - name: ctr
+        description: "Click-through rate"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                max_value: 1
+      - name: position
+        description: "Average position in search results"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+      - name: domain
+        description: "Source domain (sc-domain:...)"
+        tests:
+          - not_null
+
+  - name: stg_gsc__performance_report_page
+    description: "Staging model for GSC performance report by page"
+    columns:
+      - name: id
+        description: "Surrogate key"
+        tests:
+          - not_null
+          - unique
+      - name: site_url
+        description: "GSC site URL"
+        tests:
+          - not_null
+      - name: date
+        description: "Date of the performance data"
+        tests:
+          - not_null
+      - name: page
+        description: "Page URL"
+        tests:
+          - not_null
+      - name: clicks
+        description: "Number of clicks"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+      - name: impressions
+        description: "Number of impressions"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+      - name: ctr
+        description: "Click-through rate"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                max_value: 1
+      - name: position
+        description: "Average position in search results"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+      - name: domain
+        description: "Source domain (sc-domain:...)"
+        tests:
+          - not_null
+
+  - name: stg_gsc__performance_report_query
+    description: "Staging model for GSC performance report by query"
+    columns:
+      - name: id
+        description: "Surrogate key"
+        tests:
+          - not_null
+          - unique
+      - name: site_url
+        description: "GSC site URL"
+        tests:
+          - not_null
+      - name: date
+        description: "Date of the performance data"
+        tests:
+          - not_null
+      - name: query
+        description: "Search query"
+        tests:
+          - not_null
+      - name: clicks
+        description: "Number of clicks"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+      - name: impressions
+        description: "Number of impressions"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+      - name: ctr
+        description: "Click-through rate"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                max_value: 1
+      - name: position
+        description: "Average position in search results"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+      - name: domain
+        description: "Source domain (sc-domain:...)"
+        tests:
+          - not_null

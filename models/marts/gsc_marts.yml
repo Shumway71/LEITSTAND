@@ -1,0 +1,352 @@
+version: 2
+
+models:
+  - name: dim_country
+    description: >
+      Ländermapping: ISO 3166-1 alpha-3 → deutscher Ländername + ISO alpha-2.
+      Grain: ein Zeile pro country_code. Ersetzt das CASE-WHEN in Metabase Card 72.
+    columns:
+      - name: country_code
+        description: "ISO 3166-1 alpha-3 Ländercode (z.B. DEU, USA, GBR)"
+        tests:
+          - unique
+          - not_null
+      - name: country_name
+        description: "Deutscher Ländername (z.B. Deutschland, Vereinigte Staaten)"
+        tests:
+          - not_null
+      - name: country_iso2
+        description: "ISO 3166-1 alpha-2 Ländercode (z.B. DE, US, GB) — für Kartenvisualisierung"
+        tests:
+          - not_null
+
+  - name: fact_gsc_performance_country
+    description: >
+      GSC-Performance nach Land. Enthält den ISO-Code und den deutschen Ländernamen
+      via JOIN auf dim_country. Grain: eine Zeile pro Domain + Datum + Land.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - id
+    columns:
+      - name: id
+        description: "Surrogatschlüssel (domain, date, country)"
+        tests:
+          - not_null
+          - unique
+      - name: date
+        description: "Datum der Performance-Daten"
+        tests:
+          - not_null
+      - name: country
+        description: "ISO 3166-1 alpha-3 Ländercode"
+        tests:
+          - not_null
+      - name: country_name
+        description: "Deutscher Ländername (aus dim_country)"
+        tests:
+          - not_null
+      - name: clicks
+        description: "Anzahl Klicks"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+      - name: impressions
+        description: "Anzahl Impressions"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+      - name: ctr
+        description: "Click-Through-Rate"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                max_value: 1
+      - name: position
+        description: "Durchschnittliche Position in den Suchergebnissen"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+      - name: domain
+        description: "Quelldomain (sc-domain:...)"
+        tests:
+          - not_null
+
+  - name: fact_gsc_performance_date
+    description: >
+      GSC-Performance nach Datum (gesamte Domain). Grain: eine Zeile pro Domain + Datum.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - id
+    columns:
+      - name: id
+        description: "Surrogatschlüssel (domain, date)"
+        tests:
+          - not_null
+          - unique
+      - name: date
+        description: "Datum der Performance-Daten"
+        tests:
+          - not_null
+      - name: clicks
+        description: "Anzahl Klicks"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+      - name: impressions
+        description: "Anzahl Impressions"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+      - name: ctr
+        description: "Click-Through-Rate"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                max_value: 1
+      - name: position
+        description: "Durchschnittliche Position"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+      - name: domain
+        description: "Quelldomain (sc-domain:...)"
+        tests:
+          - not_null
+
+  - name: fact_gsc_performance_device
+    description: >
+      GSC-Performance nach Gerätetyp. Grain: eine Zeile pro Domain + Datum + Gerät.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - id
+    columns:
+      - name: id
+        description: "Surrogatschlüssel (domain, date, device)"
+        tests:
+          - not_null
+          - unique
+      - name: date
+        description: "Datum der Performance-Daten"
+        tests:
+          - not_null
+      - name: device
+        description: "Gerätetyp (DESKTOP, MOBILE, TABLET)"
+        tests:
+          - not_null
+      - name: clicks
+        description: "Anzahl Klicks"
+      - name: impressions
+        description: "Anzahl Impressions"
+      - name: ctr
+        description: "Click-Through-Rate"
+      - name: position
+        description: "Durchschnittliche Position"
+      - name: domain
+        description: "Quelldomain (sc-domain:...)"
+        tests:
+          - not_null
+
+  - name: fact_gsc_performance_keys
+    description: >
+      GSC-Performance nach Suchbegriffen. Grain: eine Zeile pro Domain + Datum + Suchbegriff.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - id
+    columns:
+      - name: id
+        description: "Surrogatschlüssel (domain, date, keys)"
+        tests:
+          - not_null
+          - unique
+      - name: date
+        description: "Datum der Performance-Daten"
+        tests:
+          - not_null
+      - name: keys
+        description: "Suchbegriff(e)"
+        tests:
+          - not_null
+      - name: clicks
+        description: "Anzahl Klicks"
+      - name: impressions
+        description: "Anzahl Impressions"
+      - name: ctr
+        description: "Click-Through-Rate"
+      - name: position
+        description: "Durchschnittliche Position"
+      - name: domain
+        description: "Quelldomain (sc-domain:...)"
+        tests:
+          - not_null
+
+  - name: fact_gsc_performance_page
+    description: >
+      GSC-Performance nach Seite. Grain: eine Zeile pro Domain + Datum + Seite.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - id
+    columns:
+      - name: id
+        description: "Surrogatschlüssel (domain, date, page)"
+        tests:
+          - not_null
+          - unique
+      - name: date
+        description: "Datum der Performance-Daten"
+        tests:
+          - not_null
+      - name: page
+        description: "Seiten-URL"
+        tests:
+          - not_null
+      - name: clicks
+        description: "Anzahl Klicks"
+      - name: impressions
+        description: "Anzahl Impressions"
+      - name: ctr
+        description: "Click-Through-Rate"
+      - name: position
+        description: "Durchschnittliche Position"
+      - name: domain
+        description: "Quelldomain (sc-domain:...)"
+        tests:
+          - not_null
+
+  - name: fact_gsc_performance_query
+    description: >
+      GSC-Performance nach Suchanfrage. Grain: eine Zeile pro Domain + Datum + Query.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - id
+    columns:
+      - name: id
+        description: "Surrogatschlüssel (domain, date, query)"
+        tests:
+          - not_null
+          - unique
+      - name: date
+        description: "Datum der Performance-Daten"
+        tests:
+          - not_null
+      - name: query
+        description: "Suchanfrage"
+        tests:
+          - not_null
+      - name: clicks
+        description: "Anzahl Klicks"
+      - name: impressions
+        description: "Anzahl Impressions"
+      - name: ctr
+        description: "Click-Through-Rate"
+      - name: position
+        description: "Durchschnittliche Position"
+      - name: domain
+        description: "Quelldomain (sc-domain:...)"
+        tests:
+          - not_null
+
+  - name: fact_gsc_performance_unified
+    description: >
+      Vereinheitlichte GSC-Performance über alle Dimensionen (Country, Date, Device, Keys, Page, Query).
+      Jede Zeile hat einen dimension_type und dimension_value. Grain: eine Zeile pro Dimension + Wert.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - id
+            - dimension_type
+    columns:
+      - name: id
+        description: "Surrogatschlüssel"
+        tests:
+          - not_null
+      - name: dimension_type
+        description: "Dimensionstyp (country, date, device, keys, page, query)"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['country', 'date', 'device', 'keys', 'page', 'query']
+      - name: dimension_value
+        description: "Wert der Dimension"
+        tests:
+          - not_null
+      - name: date
+        description: "Datum der Performance-Daten"
+        tests:
+          - not_null
+      - name: clicks
+        description: "Anzahl Klicks"
+      - name: impressions
+        description: "Anzahl Impressions"
+      - name: ctr
+        description: "Click-Through-Rate"
+      - name: position
+        description: "Durchschnittliche Position"
+      - name: domain
+        description: "Quelldomain (sc-domain:...)"
+        tests:
+          - not_null
+
+  - name: agg_gsc_performance_daily
+    description: >
+      Täglich aggregierte GSC-Kennzahlen pro Domain.
+      Grain: eine Zeile pro Domain + Datum. Partitioniert nach date,
+      geclustert nach domain — optimiert für Dashboard-Queries mit
+      Datumsfilter und Domain-Filter, vermeidet Volltabellenscans.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - domain
+            - date
+    columns:
+      - name: domain
+        description: "Quelldomain"
+        tests:
+          - not_null
+      - name: date
+        description: "Datum"
+        tests:
+          - not_null
+      - name: total_clicks
+        description: "Summe Klicks über alle Dimensionen"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+      - name: total_impressions
+        description: "Summe Impressions über alle Dimensionen"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+      - name: avg_ctr
+        description: "Durchschnittliche CTR"
+      - name: avg_position
+        description: "Durchschnittliche Position"
+      - name: country_count
+        description: "Anzahl der Länder mit Klicks an diesem Tag"
+      - name: query_count
+        description: "Anzahl der Suchanfragen mit Klicks an diesem Tag"
