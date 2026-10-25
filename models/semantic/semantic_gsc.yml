@@ -11,7 +11,21 @@ models:
       - name: date_day
         granularity: day
 
+  - name: dim_domain
+    description: Eine Zeile je Search-Console-Property (Domain) mit erstem und letztem Datentag
+    columns:
+      - name: domain
+        description: Property-Kennung, z. B. sc-domain:example.de
+        data_tests:
+          - unique
+          - not_null
+      - name: site_url
+        description: Domain ohne Präfix
+
+# Sternschema: Fakten (gsc_daily, gsc_country) → Dimensionen (website, country, calendar)
+# Joins entstehen über gleichnamige Entitäten: foreign im Faktenmodell → primary im Dimensionsmodell (n:1)
 semantic_models:
+  # ---------------- Fakten
   - name: gsc_daily
     description: Google Search Console – Tageswerte je Domain
     model: ref('fact_gsc_performance_date')
@@ -21,6 +35,12 @@ semantic_models:
       - name: gsc_day
         type: primary
         expr: concat(domain, '|', cast(date as string))
+      - name: website
+        type: foreign
+        expr: domain
+      - name: calendar_day
+        type: foreign
+        expr: date
     dimensions:
       - name: date
         type: time
@@ -49,6 +69,16 @@ semantic_models:
       - name: gsc_country_row
         type: primary
         expr: id
+      - name: website
+        type: foreign
+        expr: domain
+      - name: country
+        type: foreign
+        # GSC liefert ISO-3 klein (deu), dim_country groß (DEU)
+        expr: upper(country)
+      - name: calendar_day
+        type: foreign
+        expr: date
     dimensions:
       - name: date
         type: time
@@ -65,6 +95,64 @@ semantic_models:
       - name: country_impressions
         agg: sum
         expr: impressions
+
+  # ---------------- Dimensionen
+  - name: website
+    description: Domain-Dimension (Search-Console-Property)
+    model: ref('dim_domain')
+    entities:
+      - name: website
+        type: primary
+        expr: domain
+    dimensions:
+      - name: site_url
+        type: categorical
+
+  - name: country
+    description: Länder-Dimension (ISO-3, ISO-2, deutscher Name)
+    model: ref('dim_country')
+    entities:
+      - name: country
+        type: primary
+        expr: country_code
+    dimensions:
+      - name: country_name
+        label: Land
+        type: categorical
+      - name: country_iso2
+        label: ISO-2
+        type: categorical
+
+  - name: calendar
+    description: Kalender-Dimension aus dim_date (Saison, Wochentag, Monat …)
+    model: ref('dim_date')
+    entities:
+      - name: calendar_day
+        type: primary
+        expr: date
+    dimensions:
+      - name: year_month
+        label: Jahr-Monat
+        type: categorical
+      - name: year_week
+        label: Jahr-Woche
+        type: categorical
+      - name: quarter_nr
+        expr: quarter
+        label: Quartal
+        type: categorical
+      - name: month_name
+        label: Monat
+        type: categorical
+      - name: day_name
+        label: Wochentag
+        type: categorical
+      - name: day_of_week
+        label: Wochentag (Nr.)
+        type: categorical
+      - name: season
+        label: Jahreszeit
+        type: categorical
 
 metrics:
   - name: gsc_clicks
