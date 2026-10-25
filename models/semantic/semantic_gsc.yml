@@ -1,0 +1,111 @@
+version: 2
+
+models:
+  - name: metricflow_time_spine
+    description: Tages-Zeitachse für den Semantic Layer (MetricFlow)
+    config:
+      materialized: table
+    time_spine:
+      standard_granularity_column: date_day
+    columns:
+      - name: date_day
+        granularity: day
+
+semantic_models:
+  - name: gsc_daily
+    description: Google Search Console – Tageswerte je Domain
+    model: ref('fact_gsc_performance_date')
+    defaults:
+      agg_time_dimension: date
+    entities:
+      - name: gsc_day
+        type: primary
+        expr: concat(domain, '|', cast(date as string))
+    dimensions:
+      - name: date
+        type: time
+        type_params:
+          time_granularity: day
+      - name: domain
+        type: categorical
+      - name: site_url
+        type: categorical
+    measures:
+      - name: clicks
+        agg: sum
+      - name: impressions
+        agg: sum
+      - name: position_weighted
+        description: Position gewichtet mit Impressionen (für Ø-Position)
+        agg: sum
+        expr: position * impressions
+
+  - name: gsc_country
+    description: Google Search Console – Werte je Land
+    model: ref('fact_gsc_performance_country')
+    defaults:
+      agg_time_dimension: date
+    entities:
+      - name: gsc_country_row
+        type: primary
+        expr: id
+    dimensions:
+      - name: date
+        type: time
+        type_params:
+          time_granularity: day
+      - name: country_name
+        type: categorical
+      - name: domain
+        type: categorical
+    measures:
+      - name: country_clicks
+        agg: sum
+        expr: clicks
+      - name: country_impressions
+        agg: sum
+        expr: impressions
+
+metrics:
+  - name: gsc_clicks
+    label: Klicks
+    description: Klicks aus der Google-Suche
+    type: simple
+    type_params:
+      measure: clicks
+  - name: gsc_impressions
+    label: Impressionen
+    type: simple
+    type_params:
+      measure: impressions
+  - name: gsc_ctr
+    label: CTR
+    description: Klickrate = Klicks / Impressionen
+    type: ratio
+    type_params:
+      numerator: gsc_clicks
+      denominator: gsc_impressions
+  - name: gsc_position_weighted
+    label: Position (gewichtet, Summe)
+    type: simple
+    type_params:
+      measure: position_weighted
+  - name: gsc_avg_position
+    label: Ø Position
+    description: Mit Impressionen gewichtete durchschnittliche Position
+    type: derived
+    type_params:
+      expr: gsc_position_weighted / nullif(gsc_impressions, 0)
+      metrics:
+        - name: gsc_position_weighted
+        - name: gsc_impressions
+  - name: gsc_clicks_cumulative
+    label: Klicks kumuliert
+    type: cumulative
+    type_params:
+      measure: clicks
+  - name: gsc_country_clicks
+    label: Klicks je Land
+    type: simple
+    type_params:
+      measure: country_clicks
