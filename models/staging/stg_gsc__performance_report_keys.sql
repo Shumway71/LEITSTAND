@@ -11,7 +11,7 @@ latest as (
     qualify row_number() over (
         partition by domain, date, to_json_string(keys)
         order by _sdc_sync_started_at desc, _sdc_extracted_at desc, _sdc_sequence desc
-    ) = 1
+    ) = 1 
 )
 
 select
